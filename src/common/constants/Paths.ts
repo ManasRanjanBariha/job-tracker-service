@@ -9,6 +9,16 @@ const Paths = {
     Logout: '/logout',
     Refresh: '/refresh',
   },
+  JobApplications:{
+    _: '/applications',
+    GetAll: '/all',
+    Add: '/add',
+    GetOne: '/:id',
+    Update: '/update',
+    Delete: '/delete/:id',
+    uploadResume: '/:id/upload-resume',
+    uploadDocuments: '/:id/upload-documents',
+  },
   Users: {
     _: '/users',
     Get: '/all',
