@@ -5,7 +5,7 @@ let db: Database<sqlite3.Database, sqlite3.Statement>;
 
 export const connectDB = async () => {
   db = await open({
-    filename: "./database.db",
+    filename: "./job-tracker.db",
     driver: sqlite3.Database,
   });
 

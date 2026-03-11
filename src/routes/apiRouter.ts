@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import Paths from '@src/common/constants/Paths';
+import { authenticate, optionalAuth } from '@src/middleware/authMiddleware';
 
 import authRoutes from './authRoutes';
 import UserRoutes from './UserRoutes';
@@ -19,10 +20,13 @@ apiRouter.use(Paths.auth._, authRoutes);
 
 const userRouter = Router();
 
+// Routes that don't require authentication
 userRouter.get(Paths.Users.Get, UserRoutes.getAll);
-userRouter.post(Paths.Users.Add, UserRoutes.add);
-userRouter.put(Paths.Users.Update, UserRoutes.update);
-userRouter.delete(Paths.Users.Delete, UserRoutes.delete);
+
+// Routes that require authentication
+userRouter.post(Paths.Users.Add, authenticate, UserRoutes.add);
+userRouter.put(Paths.Users.Update, authenticate, UserRoutes.update);
+userRouter.delete(Paths.Users.Delete, authenticate, UserRoutes.delete);
 
 apiRouter.use(Paths.Users._, userRouter);
 

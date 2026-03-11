@@ -1,85 +1,89 @@
-import { getRandomInt } from '@src/common/utils/number-utils';
 import { IUser } from '@src/models/User.model';
-
-import orm from './MockOrm';
+import { getDB } from '@src/db/database';
 
 /******************************************************************************
                                 Functions
 ******************************************************************************/
 
 /**
- * Get one user.
+ * Get one user by email.
  */
 async function getOne(email: string): Promise<IUser | null> {
-  const db = await orm.openDb();
-  for (const user of db.users) {
-    if (user.email === email) {
-      return user;
-    }
-  }
-  return null;
+  const db = getDB();
+  const user = await db.get<IUser>(
+    'SELECT * FROM users WHERE email = ?',
+    [email],
+  );
+  return user || null;
+}
+
+/**
+ * Get one user by id.
+ */
+async function getById(id: number): Promise<IUser | null> {
+  const db = getDB();
+  const user = await db.get<IUser>(
+    'SELECT * FROM users WHERE id = ?',
+    [id],
+  );
+  return user || null;
 }
 
 /**
  * See if a user with the given id exists.
  */
 async function persists(id: number): Promise<boolean> {
-  const db = await orm.openDb();
-  for (const user of db.users) {
-    if (user.id === id) {
-      return true;
-    }
-  }
-  return false;
+  const user = await getById(id);
+  return user !== null;
 }
 
 /**
  * Get all users.
  */
 async function getAll(): Promise<IUser[]> {
-  const db = await orm.openDb();
-  return db.users;
+  const db = getDB();
+  const users = await db.all<IUser[]>(
+    'SELECT * FROM users',
+  );
+  return users || [];
 }
 
 /**
  * Add one user.
  */
-async function add(user: IUser): Promise<void> {
-  const db = await orm.openDb();
-  user.id = getRandomInt();
-  db.users.push(user);
-  return orm.saveDb(db);
+async function add(user: IUser): Promise<IUser> {
+  const db = getDB();
+  const result = await db.run(
+    'INSERT INTO users (name, email, password, refreshToken, created) VALUES (?, ?, ?, ?, ?)',
+    [user.name, user.email, user.password, user.refreshToken || '', user.created],
+  );
+  
+  return {
+    ...user,
+    id: result.lastID || 0,
+  };
 }
 
 /**
  * Update a user.
  */
 async function update(user: IUser): Promise<void> {
-  const db = await orm.openDb();
-  for (let i = 0; i < db.users.length; i++) {
-    if (db.users[i].id === user.id) {
-      const dbUser = db.users[i];
-      db.users[i] = {
-        ...dbUser,
-        name: user.name,
-        email: user.email,
-      };
-      return orm.saveDb(db);
-    }
-  }
+  const db = getDB();
+  await db.run(
+    'UPDATE users SET name = ?, email = ?, password = ?, refreshToken = ? WHERE id = ?',
+    [user.name, user.email, user.password, user.refreshToken || '', user.id],
+  );
 }
 
 /**
  * Delete one user.
  */
 async function delete_(id: number): Promise<void> {
-  const db = await orm.openDb();
-  for (let i = 0; i < db.users.length; i++) {
-    if (db.users[i].id === id) {
-      db.users.splice(i, 1);
-      return orm.saveDb(db);
-    }
-  }
+  const db = getDB();
+  await db.run(
+    'DELETE FROM users WHERE id = ?',
+    [id],
+  );
 }
 
 // **** Unit-Tests Only **** //
@@ -90,29 +94,33 @@ async function delete_(id: number): Promise<void> {
  * Delete every user record.
  */
 async function deleteAllUsers(): Promise<void> {
-  const db = await orm.openDb();
-  db.users = [];
-  return orm.saveDb(db);
+  const db = getDB();
+  await db.run('DELETE FROM users');
 }
 
 /**
  * @testOnly
  *
- * Insert multiple users. Can't do multiple at once cause using a plain file
- * for now.
+ * Insert multiple users.
  */
 async function insertMultiple(
   users: IUser[] | readonly IUser[],
 ): Promise<IUser[]> {
-  const db = await orm.openDb(),
-    usersF = [...users];
-  for (const user of usersF) {
-    user.id = getRandomInt();
-    user.created = new Date();
+  const db = getDB();
+  const insertedUsers: IUser[] = [];
+
+  for (const user of users) {
+    const result = await db.run(
+      'INSERT INTO users (name, email, password, refreshToken, created) VALUES (?, ?, ?, ?, ?)',
+      [user.name, user.email, user.password, user.refreshToken || '', user.created],
+    );
+    insertedUsers.push({
+      ...user,
+      id: result.lastID || 0,
+    });
   }
-  db.users = [...db.users, ...users];
-  await orm.saveDb(db);
-  return usersF;
+
+  return insertedUsers;
 }
 
 /******************************************************************************
@@ -121,6 +129,7 @@ async function insertMultiple(
 
 export default {
   getOne,
+  getById,
   persists,
   getAll,
   add,

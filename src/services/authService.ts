@@ -51,25 +51,27 @@ async function signup(email: string, password: string, name: string): Promise<Au
     refreshToken: '',
   };
 
-  await UserRepo.add(newUser);
+  const createdUser = await UserRepo.add(newUser);
 
   // Generate tokens
   const tokens = generateTokenPair({
-    userId: newUser.id,
-    email: newUser.email,
+    userId: createdUser.id,
+    email: createdUser.email,
   });
 
   // Store refresh token in the database
-  const userWithToken = { ...newUser, refreshToken: tokens.refreshToken };
-  await UserRepo.update(userWithToken);
+  await UserRepo.update({
+    ...createdUser,
+    refreshToken: tokens.refreshToken,
+  });
 
   // Return user without password and with tokens
   return {
     user: {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      created: newUser.created,
+      id: createdUser.id,
+      name: createdUser.name,
+      email: createdUser.email,
+      created: createdUser.created,
     },
     accessToken: tokens.accessToken,
     refreshToken: tokens.refreshToken,
