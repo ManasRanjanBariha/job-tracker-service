@@ -7,6 +7,7 @@ import authRoutes from './authRoutes';
 import UserRoutes from './UserRoutes';
 import JobApplicationRouter from './JobApplicationRouter';
 
+
 /******************************************************************************
                                 Setup
 ******************************************************************************/
@@ -22,23 +23,26 @@ apiRouter.use(Paths.auth._, authRoutes);
 const userRouter = Router();
 
 // Routes that don't require authentication
-userRouter.get(Paths.Users.Get, UserRoutes.getAll);
+// userRouter.get(Paths.Users.Get, UserRoutes.getAll);
 
 // Routes that require authentication
 userRouter.post(Paths.Users.Add, authenticate, UserRoutes.add);
 userRouter.put(Paths.Users.Update, authenticate, UserRoutes.update);
 userRouter.delete(Paths.Users.Delete, authenticate, UserRoutes.delete);
 
+apiRouter.use(Paths.Users._, userRouter);
 
-// Routes for job applications
+// ----------------------- Add JobApplicationRouter ---------------------- //
+
 const applicationRouter = Router();
 applicationRouter.get(Paths.JobApplications.GetAll, authenticate, JobApplicationRouter.getAll);
 applicationRouter.post(Paths.JobApplications.Add, authenticate, JobApplicationRouter.addOne);
 applicationRouter.get(Paths.JobApplications.GetOne, authenticate, JobApplicationRouter.getOne);
 applicationRouter.put(Paths.JobApplications.Update, authenticate, JobApplicationRouter.updateOne);
 applicationRouter.delete(Paths.JobApplications.Delete, authenticate, JobApplicationRouter.deleteOne);
+applicationRouter.put(Paths.JobApplications.changeStage, authenticate, JobApplicationRouter.changeStage);
 
-apiRouter.use(Paths.Users._, userRouter);
+apiRouter.use(Paths.JobApplications._, applicationRouter);
 
 /******************************************************************************
                                 Export

@@ -2,6 +2,7 @@ import HttpStatusCodes from "@src/common/constants/HttpStatusCodes";
 import { RouteError } from "@src/common/utils/route-errors";
 import { IJobApplication } from "@src/models/JobApplication.model";
 import JobApplicationRepo from "@src/repos/JobApplicationRepo";
+import StageHistoryRepo from "@src/repos/StageHistoryRepo";
 
 
 const Errors = {
@@ -16,9 +17,18 @@ function getAll(): Promise<IJobApplication[]> {
   return JobApplicationRepo.getAll();
 }
 
+// Get all job applications for a specific user.
+function getAllByUserId(userId: number): Promise<IJobApplication[]> {
+  return JobApplicationRepo.getAllByUserId(userId);
+}
+
 // Add a new job application.
-function addOne(jobApplication: IJobApplication): Promise<IJobApplication> {
-  return JobApplicationRepo.add(jobApplication);
+async function addOne(jobApplication: IJobApplication): Promise<IJobApplication> {
+  const newJobApplication =await JobApplicationRepo.add(jobApplication);
+  console.log("New job application added:", newJobApplication);
+  await StageHistoryRepo.addStageHistory(newJobApplication?.id!, newJobApplication?.stage, newJobApplication?.userId);
+  return newJobApplication;
+
 }
 // Get one job application by id.
 async function getOne(id: number): Promise<IJobApplication> {
@@ -46,12 +56,22 @@ async function deleteOne(id: number): Promise<void> {
     }
     return JobApplicationRepo.deleteById(id);
 }
+async function changeStage(applicationId: number, newStage: string,userId:number): Promise<void> {
+  const persists = await JobApplicationRepo.persists(applicationId);
+  if (!persists) {
+    throw new RouteError(HttpStatusCodes.NOT_FOUND, Errors.JOB_APPLICATION_NOT_FOUND);
+  }
+   await JobApplicationRepo.changeStage(applicationId, newStage,userId);
+   await StageHistoryRepo.addStageHistory(applicationId, newStage,userId);
+}
 
 export default {
     Errors,
     getAll,
+    getAllByUserId,
     addOne,
     getOne,
     updateOne,
     deleteOne,
+    changeStage
 }

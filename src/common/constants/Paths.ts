@@ -14,18 +14,34 @@ const Paths = {
     GetAll: '/all',
     Add: '/add',
     GetOne: '/:id',
-    Update: '/update',
+    Update: '/update/:id',
     Delete: '/delete/:id',
+    changeStage: '/stage/:id',
     uploadResume: '/:id/upload-resume',
     uploadDocuments: '/:id/upload-documents',
   },
   Users: {
     _: '/users',
-    Get: '/all',
+    GetAll: '/all',
     Add: '/add',
     Update: '/update',
     Delete: '/delete/:id',
   },
+  documents: {
+    _: '/documents',
+    GetAll: '/all',
+    GetByApplicationId: '/application/:applicationId',
+    Upload: '/:applicationId',
+    GetOne: '/:id',
+    Delete: '/:id',
+  },
+  stats:{
+    _: '/stats',
+    overview: '/overview',
+    funnel: '/funnel',
+    responseRate: '/response-rate',
+    timelline: '/timeline',
+  }
 } as const;
 
 export const JetPaths = jetPaths(Paths);

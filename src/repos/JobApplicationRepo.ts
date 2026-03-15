@@ -16,12 +16,22 @@ async function getAll(): Promise<IJobApplication[]> {
   return jobApplications || [];
 }
 
+// Get job applications for a specific user.
+async function getAllByUserId(userId: number): Promise<IJobApplication[]> {
+  const db = getDB();
+  const jobApplications = await db.all<IJobApplication[]>(
+    'SELECT * FROM job_applications WHERE userId = ?',
+    [userId],
+  );
+  return jobApplications || [];
+}
+
 // Add a new job application.
 async function add(jobApplication: IJobApplication): Promise<IJobApplication> {
   const db = getDB();
     const result = await db.run(
-        "INSERT INTO job_applications (company, role, stage, appliedDate, note) VALUES (?, ?, ?, ?, ?)",
-        [jobApplication.company, jobApplication.role, jobApplication.stage, jobApplication.appliedDate, jobApplication.note]
+        "INSERT INTO job_applications (userId, company, role, stage, salary, appliedDate, interviewDate, note, jobUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [jobApplication.userId, jobApplication.company, jobApplication.role, jobApplication.stage, jobApplication.salary, jobApplication.appliedDate, jobApplication.interviewDate || null, jobApplication.note, jobApplication.jobUrl]
     );
     return { ...jobApplication, id: result.lastID as number };
 }
@@ -38,10 +48,11 @@ async function getOne(id: number): Promise<IJobApplication | null> {
 
 // update a job application.
 async function update(jobApplication: IJobApplication): Promise<IJobApplication> {
-  const db = getDB();   
+  const db = getDB();  
+  console.log("Updating job application:", jobApplication);  
     await db.run(
-        "UPDATE job_applications SET company = ?, role = ?, stage = ?, appliedDate = ?, note = ? WHERE id = ?",
-        [jobApplication.company, jobApplication.role, jobApplication.stage, jobApplication.appliedDate, jobApplication.note, jobApplication.id]
+        "UPDATE job_applications SET company = ?, role = ?, stage = ?, appliedDate = ?, note = ? WHERE id = ? and userId = ?",
+        [jobApplication.company, jobApplication.role, jobApplication.stage, jobApplication.appliedDate, jobApplication.note, jobApplication.id, jobApplication.userId]
     );
     return jobApplication;
 }
@@ -55,6 +66,14 @@ async function deleteById(id: number): Promise<void> {
     );
 }
 
+async function changeStage(applicationId: number, newStage: string,userId:number): Promise<void> {
+    const db = getDB();
+    await db.run(
+        "UPDATE job_applications SET stage = ? WHERE id = ?",
+        [newStage, applicationId]
+    );
+}
+
 // check if a job application with the given id exists.
 async function persists(id: number): Promise<boolean> {
   const jobApplication = await getOne(id);
@@ -63,9 +82,11 @@ async function persists(id: number): Promise<boolean> {
 
 export default{
     getAll,
+    getAllByUserId,
     add,
     getOne,
     update,
     deleteById,
     persists,
+    changeStage
 }
