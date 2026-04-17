@@ -27,8 +27,8 @@ async function funnel(userId: number): Promise<any> {
   const db = getDB();
   const funnelData = await db.all(
     `SELECT stage, COUNT(DISTINCT applicationId) AS count
-FROM application_stage_history
-GROUP BY stage WHERE userId = ?`,
+  FROM application_stage_history
+ WHERE userId = ? GROUP BY stage`,
     userId,
   );
   return funnelData || [];
@@ -51,11 +51,12 @@ WHERE a.stage='Applied' AND i.stage='Interview' AND a.userId = ?;`,
 async function timeline(userId: number): Promise<IStageHistory[]> {
   const db = getDB();
   const timelineData = await db.all(
-    `SELECT DATE(applied_date), COUNT(*)
+    `SELECT DATE(appliedDate) as date, COUNT(*) as count
 FROM job_applications
-WHERE user_id = ?
-GROUP BY DATE(applied_date)
-ORDER BY DATE(applied_date); WHERE userId = ?`,userId
+WHERE userId = ?
+GROUP BY DATE(appliedDate)
+ORDER BY DATE(appliedDate);`,
+    userId
   );
   return timelineData || [];
 }
@@ -96,13 +97,33 @@ async function addStageHistory(applicationId: number, stage: string,userId:numbe
   );
 }
 
+// GEtting last 7 months data for dashboard
+async function getlastSevenMonthsData(userId: number): Promise<any> {
+  const db = getDB();
+  const data = await db.all(
+    `SELECT 
+  strftime('%m-%Y', appliedDate) AS month,
+  COUNT(*) AS jobs_applied,
+  COUNT(CASE WHEN interviewDate IS NOT NULL THEN 1 END) AS interviews_attended
+FROM job_applications
+WHERE appliedDate >= date('now', '-7 months') AND userId = ?
+GROUP BY month
+ORDER BY appliedDate;`,
+    userId,
+  );
+  return data || [];
+}
+
+
 export default {
   overview,
   funnel,
   avargeInterviewTime,
   timeline,
   rateofResponse,
-  addStageHistory
+  addStageHistory,
+  getlastSevenMonthsData,
+  
 };  
 
 

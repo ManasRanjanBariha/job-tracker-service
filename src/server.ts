@@ -8,6 +8,7 @@ import HttpStatusCodes from '@src/common/constants/HttpStatusCodes';
 import Paths from '@src/common/constants/Paths';
 import { RouteError } from '@src/common/utils/route-errors';
 import BaseRouter from '@src/routes/apiRouter';
+import cors from 'cors';
 
 import EnvVars, { NodeEnvs } from './common/constants/env';
 
@@ -18,6 +19,15 @@ import EnvVars, { NodeEnvs } from './common/constants/env';
 const app = express();
 
 // **** Middleware **** //
+
+// Cors Configuration
+const corsOptions = {
+  origin: 'http://localhost:4200',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 
 // Basic middleware
 app.use(express.json());
@@ -39,6 +49,14 @@ if (EnvVars.NodeEnv === NodeEnvs.PRODUCTION) {
 // Add APIs, must be after middleware
 app.use(Paths._, BaseRouter);
 
+app.use((req, res, next) => {
+  console.log('Headers:', res.getHeaders());
+  next();
+});
+
+
+
+
 // Add error handler
 app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
   if (EnvVars.NodeEnv !== NodeEnvs.TEST.valueOf()) {
@@ -51,6 +69,8 @@ app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
   }
   return next(err);
 });
+
+
 
 // **** FrontEnd Content **** //
 

@@ -6,6 +6,7 @@ import { authenticate, optionalAuth } from '@src/middleware/authMiddleware';
 import authRoutes from './authRoutes';
 import UserRoutes from './UserRoutes';
 import JobApplicationRouter from './JobApplicationRouter';
+import StatsRouter from './StatsRouter';
 
 
 /******************************************************************************
@@ -43,6 +44,21 @@ applicationRouter.delete(Paths.JobApplications.Delete, authenticate, JobApplicat
 applicationRouter.put(Paths.JobApplications.changeStage, authenticate, JobApplicationRouter.changeStage);
 
 apiRouter.use(Paths.JobApplications._, applicationRouter);
+
+
+// ----------------------- Add StatRouter ---------------------- //
+
+const statRouter = Router();
+statRouter.get(Paths.Stats.Overview, authenticate, StatsRouter.getStageHistoryByApplicationId);
+statRouter.get(Paths.Stats.Funnel, authenticate, StatsRouter.getFunnelData);
+statRouter.get(Paths.Stats.AverageInterviewTime, authenticate, StatsRouter.getAverageInterviewTime);
+statRouter.get(Paths.Stats.Timeline, authenticate, StatsRouter.getTimelineData);
+statRouter.get(Paths.Stats.ResponseRate, authenticate, StatsRouter.getRateOfResponse);
+
+//----------------------------Dashboard----------------------------//
+statRouter.get(Paths.Stats.Dashboard, authenticate, StatsRouter.getDashboardData);
+
+apiRouter.use(Paths.Stats._, statRouter);
 
 /******************************************************************************
                                 Export

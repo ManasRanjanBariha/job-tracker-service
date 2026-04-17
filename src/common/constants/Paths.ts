@@ -35,13 +35,16 @@ const Paths = {
     GetOne: '/:id',
     Delete: '/:id',
   },
-  stats:{
+  Stats:{
     _: '/stats',
-    overview: '/overview',
-    funnel: '/funnel',
-    responseRate: '/response-rate',
-    timelline: '/timeline',
-  }
+    Overview: '/overview',
+    Funnel: '/funnel',
+    ResponseRate: '/response-rate',
+    AverageInterviewTime: '/average-interview-time',
+    Timeline: '/timeline',
+    Dashboard: '/dashboard',
+  },
+ 
 } as const;
 
 export const JetPaths = jetPaths(Paths);

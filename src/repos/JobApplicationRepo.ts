@@ -80,6 +80,15 @@ async function persists(id: number): Promise<boolean> {
   return jobApplication !== null;
 }
 
+async function getlastSixApplications(userId: number): Promise<IJobApplication[]> {
+  const db = getDB();
+  const jobApplications = await db.all<IJobApplication[]>(
+    'SELECT * FROM job_applications WHERE userId = ? ORDER BY appliedDate DESC LIMIT 6',
+    [userId]
+  );
+  return jobApplications || [];
+}
+
 export default{
     getAll,
     getAllByUserId,
@@ -88,5 +97,6 @@ export default{
     update,
     deleteById,
     persists,
-    changeStage
+    changeStage,
+    getlastSixApplications
 }

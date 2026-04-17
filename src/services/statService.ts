@@ -14,3 +14,20 @@ async function getFunnelData(userId: number): Promise<any> {
 async function getAverageInterviewTime(userId: number): Promise<any> {
   return StageHistoryRepo.avargeInterviewTime(userId);
 }
+
+async function timeline(userId: number): Promise<any> {
+    return StageHistoryRepo.timeline(userId);
+}
+
+async function getResponseOfRate(userId: number): Promise<any> {
+    return StageHistoryRepo.rateofResponse(userId);
+}
+
+
+export default {
+  getStageHistoryByApplicationId,
+  getFunnelData,
+  getAverageInterviewTime,
+  timeline,
+  getResponseOfRate
+} as const;
