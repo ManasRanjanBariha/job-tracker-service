@@ -25,19 +25,41 @@ export const runMigrations = async () => {
   // Create job_applications table if it doesn't exist
   await db.exec(`
     CREATE TABLE IF NOT EXISTS job_applications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      userId INTEGER NOT NULL,
-      company TEXT NOT NULL,
-      role TEXT NOT NULL,
-      stage TEXT NOT NULL DEFAULT 'Applied',
-      salary INTEGER DEFAULT 0,
-      appliedDate DATETIME NOT NULL,
-      interviewDate DATETIME,
-      note TEXT,
-      jobUrl TEXT,
-      created DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
-    )
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    userId INTEGER NOT NULL,
+
+    company TEXT NOT NULL,
+    role TEXT NOT NULL,
+
+    stage TEXT NOT NULL DEFAULT 'Applied',
+
+    status TEXT
+      CHECK(status IN ('Active', 'Rejected', 'Offer', 'Ghosted', 'Accepted'))
+      DEFAULT 'Active',
+
+    priority TEXT
+      CHECK(priority IN ('low', 'medium', 'high'))
+      DEFAULT 'medium',
+
+    location TEXT,
+
+    salary INTEGER DEFAULT 0,
+
+    appliedDate DATETIME NOT NULL,
+    interviewDate DATETIME,
+
+    source TEXT,
+    jobUrl TEXT,
+
+    notes TEXT,
+
+    created DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (userId)
+      REFERENCES users(id)
+      ON DELETE CASCADE
+);
   `);
 
   // Create documents table if it doesn't exist
@@ -63,6 +85,8 @@ export const runMigrations = async () => {
   FOREIGN KEY (applicationId) REFERENCES job_applications(id) ON DELETE CASCADE
   FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );`);
+  // Add location column
+
 
   console.log('Migrations completed successfully');
 };

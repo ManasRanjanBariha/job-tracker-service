@@ -47,6 +47,10 @@ export interface IJobApplication extends Entity {
   interviewDate?: Date; // Optional, only if stage is "Interviewing"
   note: string;
   jobUrl: string;
+  location?: string;
+  priority?: string; // e.g. "High", "Medium", "Low"
+  source?: string; // e.g. "LinkedIn", "Company Website", "Referral"
+  status?: string; // e.g. "Active", "Rejected", "Offer", "Ghosted", "Accepted"
 }
 
 const parseJobApplication = parseObject<IJobApplication>(schema);
@@ -61,6 +65,10 @@ const isCompleteJobApplication = testObject<IJobApplication>({
     interviewDate: (value: unknown): value is Date | undefined => value === undefined || value instanceof Date,
     note: isString,
     jobUrl: isString,
+    location: isString,
+    priority: isString,
+    source: isString,
+    status: isString,
     created: function (arg: unknown): arg is string | Date {
         throw new Error('Function not implemented.');
     }
